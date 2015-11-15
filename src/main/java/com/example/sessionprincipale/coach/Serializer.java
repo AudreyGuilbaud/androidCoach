@@ -1,4 +1,4 @@
-package com.example.emds.coach;
+package com.example.sessionprincipale.coach;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,6 +20,7 @@ public abstract class Serializer {
 	 * Serialisation d'un objet
 	 * @param filename
 	 * @param object
+	 * @param context
 	 */
 	public static void serialize(String filename, Object object, Context context) {
 		try {
