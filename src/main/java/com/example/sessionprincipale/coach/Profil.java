@@ -1,7 +1,8 @@
 package com.example.sessionprincipale.coach;
 
 /**
- * Created by Session principale on 15/11/2015.
+ * Classe permettant la mémorisation des informations saisies pour la serialisation.
  */
 public class Profil {
+
 }
