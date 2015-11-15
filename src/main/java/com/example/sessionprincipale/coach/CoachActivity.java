@@ -19,7 +19,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
+/**
+ * Classe déterminant tout le fonctionnement de l'application
+ */
 public class CoachActivity extends AppCompatActivity {
 
     //propriétés pour le calcul
