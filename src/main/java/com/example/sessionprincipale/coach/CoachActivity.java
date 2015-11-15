@@ -29,7 +29,7 @@ public class CoachActivity extends AppCompatActivity {
     private Integer maxFemme = 30 ; // graisse si au-dessus
     private Integer minHomme = 10 ; // maigreur si en dessous
     private Integer maxHomme = 25 ; // graisse si au-dessus
-    private Integer sexe ; // 0 pour femme, 1 pour homme
+    private Profil monProfil ;
 
     /**
      * Détermination du sexe
@@ -41,10 +41,10 @@ public class CoachActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if (((RadioButton)findViewById(R.id.rdHomme)).isChecked()) {
                     Toast.makeText(CoachActivity.this, "Homme", Toast.LENGTH_SHORT).show();
-                    sexe = 1 ;
+                    monProfil.setSexe(1) ;
                 } else {
                     Toast.makeText(CoachActivity.this, "Femme", Toast.LENGTH_SHORT).show();
-                    sexe = 0;
+                    monProfil.setSexe(0) ;
                 }
             }
         });
@@ -56,14 +56,11 @@ public class CoachActivity extends AppCompatActivity {
      * Cette méthode permet de calculer l'IMG à l'aide des trois champs poids, taille et age, ainsi qu'avec le bouton radio qui a préalablement initialisé la
      * variable sexe à 1 (homme) ou 0 (femme). La formule du calcul est (1,2*Poids/Taille²)+(0.23*Age)-(10,83*Sexe)-5.4. Prépare l'affichage du texte et de
      * l'image en fonction du résultat.
-     * @param poids sera récupéré par le champ poids rempli par l'utilisateur
-     * @param taille sera récupérée par le champ taille rempli par l'utilisateur
-     * @param age sera récupéré par le champ age rempli par l'utilisateur
-     */
+   */
 
-        private void calcIMG(Integer poids, Integer taille, Integer age) {
-            float ftaille = (float) taille/100 ; // conversion en m
-            float img = (float)((1.2*poids/(ftaille*ftaille))+(0.23*age)-(10.83*sexe)-5.4) ;
+        private void calcIMG() {
+            float ftaille = (float) monProfil.getTaille()/100 ; // conversion en m
+            float img = (float)((1.2*monProfil.getPoids()/(ftaille*ftaille))+(0.23*monProfil.getAge())-(10.83*monProfil.getSexe())-5.4) ;
 //        float img = (float)(poids/(taille*taille)) ;
             // récupération des objets graphiques d'affichage du résultat
             TextView lblIMG = (TextView) findViewById(R.id.lblIMG);
@@ -71,7 +68,7 @@ public class CoachActivity extends AppCompatActivity {
             // mémorisation des bornes
             Integer min ;
             Integer max ;
-            if (sexe==0) {  // femme
+            if (monProfil.getSexe()==0) {  // femme
                 min = 15 ;
                 max = 30 ;
             }else{ // homme
@@ -112,7 +109,10 @@ public class CoachActivity extends AppCompatActivity {
                 String txtTaille = ((EditText) findViewById(R.id.txtTaille)).getText().toString();
                 String txtAge = ((EditText) findViewById(R.id.txtAge)).getText().toString();
                 if ((!(txtPoids.equals(""))) && (!(txtTaille.equals(""))) && (!(txtAge.equals("")))) {
-                    calcIMG(Integer.parseInt(txtPoids), Integer.parseInt(txtTaille), Integer.parseInt(txtAge)) ;
+                    monProfil.setAge(Integer.parseInt(txtAge));
+                    monProfil.setPoids(Integer.parseInt(txtPoids));
+                    monProfil.setTaille(Float.parseFloat(txtTaille)/100);
+                    calcIMG() ;
                 } else {
                     Toast.makeText(CoachActivity.this, "Veuillez saisir tous les champs !",
                             Toast.LENGTH_SHORT).show();
