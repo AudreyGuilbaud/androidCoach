@@ -142,6 +142,9 @@ public class CoachActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Récupération du profil dans la base de données
+     */
     private void recupLastProfilBase() {
         bd = accesBD. getReadableDatabase ();
         Cursor curseur = bd.rawQuery("select * from profil",null);
@@ -176,6 +179,9 @@ public class CoachActivity extends AppCompatActivity {
         return (float)((1.2*poids/(taille*taille))+(0.23*age)-(10.83*sexe)-5.4) ;
     }
 
+    /**
+     * Affiche l'historique des précédentes données
+     */
     private void remplirHisto() {
         // acccès à la base en lecture
         bd = accesBD.getReadableDatabase();
