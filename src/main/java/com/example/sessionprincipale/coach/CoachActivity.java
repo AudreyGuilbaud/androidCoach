@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -20,6 +21,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Classe déterminant tout le fonctionnement de l'application
@@ -46,14 +51,14 @@ public class CoachActivity extends AppCompatActivity {
      * initie par la même occasion la variable sexe (0 si c'est une femme, 1 si c'est un homme), nécessaire au calcul de l'IMG.
      */
     private void ecouteRadio() {
-        ((RadioGroup)findViewById(R.id.grpRadioSexe)).setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener() {
+        ((RadioGroup)findViewById(R.id.grpRadioSexe)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (((RadioButton)findViewById(R.id.rdHomme)).isChecked()) {
+                if (((RadioButton) findViewById(R.id.rdHomme)).isChecked()) {
                     Toast.makeText(CoachActivity.this, "Homme", Toast.LENGTH_SHORT).show();
-                    monProfil.setSexe(1) ;
+                    monProfil.setSexe(1);
                 } else {
                     Toast.makeText(CoachActivity.this, "Femme", Toast.LENGTH_SHORT).show();
-                    monProfil.setSexe(0) ;
+                    monProfil.setSexe(0);
                 }
             }
         });
@@ -101,7 +106,7 @@ public class CoachActivity extends AppCompatActivity {
                 }
             }
             // construction du message complet à afficher
-            lblIMG.setText(String.format("%.01f", img)+" : IMG "+message);
+            lblIMG.setText(String.format("%.01f", img) + " : IMG " + message);
         }
 
     /**
@@ -158,6 +163,55 @@ public class CoachActivity extends AppCompatActivity {
             }
         }
         curseur.close();
+    }
+    /**
+     * retourne le calcul de l'img
+     * @param poids
+     * @param taille
+     * @param age
+     * @param sexe
+     * @return
+     */
+    private float calculIMG (Integer poids, Float taille, Integer age, Integer sexe) {
+        return (float)((1.2*poids/(taille*taille))+(0.23*age)-(10.83*sexe)-5.4) ;
+    }
+
+    private void remplirHisto() {
+        // acccès à la base en lecture
+        bd = accesBD.getReadableDatabase();
+        // exécution de la requête
+        Cursor curseur = bd.rawQuery("select * from profil order by datemesure desc",null);
+        // positionnement sur la première mesure du curseur
+        curseur.moveToFirst();
+        while (!curseur.isAfterLast()) {
+            // construction de la ligne avec la date et l'img (2 zones de texte dans un layout)
+            LinearLayout laLigne = new LinearLayout(this) ; // créaton ligne
+            ((LinearLayout)findViewById(R.id.llvListeHisto)).addView(laLigne); // ajout ligne dans layout
+            laLigne.setOrientation(LinearLayout.HORIZONTAL); // orientation du contenu de la ligne
+            TextView leTexte = new TextView(this) ; // zone de texte à insérer dans la ligne
+            laLigne.addView(leTexte); // ajout de la zone de texte dans la ligne
+            // récupération dans l'ordre : date, taille, poids, age, sexe
+            String dateMesure = curseur.getString(0) ;
+            Float taille = curseur.getFloat(1) ;
+            Integer poids = curseur.getInt(2) ;
+            Integer age = curseur.getInt(3) ;
+            Integer sexe = curseur.getInt(4) ;
+            // calcul de l'img
+            float img = this.calculIMG(poids, taille, age, sexe);
+            // formatage de la date
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd hh:mm:ss 'GMT+00:00' yyyy");
+            Date convertedDate = new Date();
+            try {
+                convertedDate = dateFormat.parse(dateMesure);
+            }catch (ParseException e){};
+            dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+            // insertion des informations dans les zones de texte de la ligne
+            leTexte.setText(dateFormat.format(convertedDate)+" : IMG = "+String.format("%.01f", img));
+            // passage au tuple suivant du curseur
+            curseur.moveToNext();
+        }
+        curseur.close();
+
     }
 
 
