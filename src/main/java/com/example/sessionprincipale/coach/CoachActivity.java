@@ -31,6 +31,7 @@ public class CoachActivity extends AppCompatActivity {
     private Integer maxHomme = 25 ; // graisse si au-dessus
     private Profil monProfil ; // pour le serialize
     private String nomFic = "save" ;// pour le serialize
+    private Integer sexe = 1 ;
 
     /**
      * Détermination du sexe
