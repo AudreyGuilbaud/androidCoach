@@ -31,7 +31,11 @@ public class CoachActivity extends AppCompatActivity {
     private Integer maxHomme = 25 ; // graisse si au-dessus
     private Profil monProfil ; // pour le serialize
     private String nomFic = "save" ;// pour le serialize
-    private Integer sexe = 1 ;
+    private Integer sexe = 1 ; //sexe
+    private String nomBase = "bdcoach.sqlite" ;
+    private Integer versionBase = 1 ;
+    private MySQLiteOpenHelper accesBD ;
+
 
     /**
      * Détermination du sexe
@@ -138,6 +142,7 @@ public class CoachActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         this.ecouteRadio();
         this.ecouteCalcul();
+        accesBD = new MySQLiteOpenHelper(this, nomBase, versionBase) ;
     }
 
     @Override
