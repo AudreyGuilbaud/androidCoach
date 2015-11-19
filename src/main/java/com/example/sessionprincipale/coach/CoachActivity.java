@@ -51,14 +51,14 @@ public class CoachActivity extends AppCompatActivity {
      * initie par la même occasion la variable sexe (0 si c'est une femme, 1 si c'est un homme), nécessaire au calcul de l'IMG.
      */
     private void ecouteRadio() {
-        ((RadioGroup)findViewById(R.id.grpRadioSexe)).setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        ((RadioGroup)findViewById(R.id.grpRadioSexe)).setOnCheckedChangeListener( new RadioGroup.OnCheckedChangeListener() {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (((RadioButton) findViewById(R.id.rdHomme)).isChecked()) {
+                if (((RadioButton)findViewById(R.id.rdHomme)).isChecked()) {
                     Toast.makeText(CoachActivity.this, "Homme", Toast.LENGTH_SHORT).show();
-                    monProfil.setSexe(1);
+                    sexe = 1 ;
                 } else {
                     Toast.makeText(CoachActivity.this, "Femme", Toast.LENGTH_SHORT).show();
-                    monProfil.setSexe(0);
+                    sexe = 0 ;
                 }
             }
         });
@@ -72,42 +72,44 @@ public class CoachActivity extends AppCompatActivity {
      * l'image en fonction du résultat.
    */
 
-        private void calcIMG() {
-            float img = (float)((1.2*monProfil.getPoids()/(monProfil.getTaille()*monProfil.getTaille()))
-                    +(0.23*monProfil.getAge())-(10.83*monProfil.getSexe())-5.4) ;
-//        float img = (float)(poids/(taille*taille)) ;
-            // récupération des objets graphiques d'affichage du résultat
-            TextView lblIMG = (TextView) findViewById(R.id.lblIMG);
-            ImageView imgSmiley = (ImageView) findViewById(R.id.imgSmiley);
-            // mémorisation des bornes
-            Integer min ;
-            Integer max ;
-            if (monProfil.getSexe()==0) {  // femme
-                min = 15 ;
-                max = 30 ;
-            }else{ // homme
-                min = 10 ;
-                max = 25;
-            }
-            // analyse de l'img
-            lblIMG.setTextColor(Color.RED);
-            String message ;
-            if (img<min) { // maigre
-                message = "trop faible" ;
-                imgSmiley.setImageResource(R.drawable.maigre);
-            }else{
-                if (img>max) { // graisse
-                    message = "trop élevé" ;
-                    imgSmiley.setImageResource(R.drawable.graisse);
-                }else{ // normal
-                    lblIMG.setTextColor(Color.GREEN);
-                    message = "normal" ;
-                    imgSmiley.setImageResource(R.drawable.normal);
-                }
-            }
-            // construction du message complet à afficher
-            lblIMG.setText(String.format("%.01f", img) + " : IMG " + message);
+    /**
+     * Affichage de l'IMG
+     */
+    private void calcIMG() {
+        // calcul de l'img
+        float img = this.calculIMG(monProfil.getPoids(), monProfil.getTaille(), monProfil.getAge(), monProfil.getSexe()) ;
+        // récupération des objets graphiques d'affichage du résultat
+        TextView lblIMG = (TextView) findViewById(R.id.lblIMG);
+        ImageView imgSmiley = (ImageView) findViewById(R.id.imgSmiley);
+        // mémorisation des bornes
+        Integer min ;
+        Integer max ;
+        if (monProfil.getSexe()==0) {  // femme
+            min = 15 ;
+            max = 30 ;
+        }else{ // homme
+            min = 10 ;
+            max = 25 ;
         }
+        // analyse de l'img
+        lblIMG.setTextColor(Color.RED);
+        String message ;
+        if (img<min) { // maigre
+            message = "trop faible" ;
+            imgSmiley.setImageResource(R.drawable.maigre);
+        }else{
+            if (img>max) { // graisse
+                message = "trop élevé" ;
+                imgSmiley.setImageResource(R.drawable.graisse);
+            }else{ // normal
+                lblIMG.setTextColor(Color.GREEN);
+                message = "normal" ;
+                imgSmiley.setImageResource(R.drawable.normal);
+            }
+        }
+        // construction du message complet à afficher
+        lblIMG.setText(String.format("%.01f", img)+" : IMG "+message);
+    }
 
     /**
      * Actions qui s'exécutent au clic sur le bouton Calculer
@@ -117,27 +119,30 @@ public class CoachActivity extends AppCompatActivity {
      */
 
     private void ecouteCalcul() {
-        ((Button) findViewById(R.id.btnCalc)).setOnClickListener(new Button.OnClickListener() {
+        ((Button)findViewById(R.id.btnCalc)).setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
                 String txtPoids = ((EditText) findViewById(R.id.txtPoids)).getText().toString();
                 String txtTaille = ((EditText) findViewById(R.id.txtTaille)).getText().toString();
                 String txtAge = ((EditText) findViewById(R.id.txtAge)).getText().toString();
                 if ((!(txtPoids.equals(""))) && (!(txtTaille.equals(""))) && (!(txtAge.equals("")))) {
-                    monProfil.setAge(Integer.parseInt(txtAge));
-                    monProfil.setPoids(Integer.parseInt(txtPoids));
-                    monProfil.setTaille(Float.parseFloat(txtTaille)/100);
-                    calcIMG() ;
+                    // mémorisation du profil
+                    monProfil = new Profil(Float.parseFloat(txtTaille) / 100,
+                            Integer.parseInt(txtPoids),
+                            Integer.parseInt(txtAge),
+                            sexe,
+                            new java.util.Date());  // la date du jour pour historiser les mesures
+                    // enregistrement dans la base de données
+                    bd = accesBD.getWritableDatabase();
+                    String req = "insert into profil (datemesure, taille, poids, age, sexe) values ";
+                    req += "(\"" + monProfil.getDateMesure().toString() + "\","
+                            + monProfil.getTaille() + "," + monProfil.getPoids() + ","
+                            + monProfil.getAge() + "," + monProfil.getSexe() + ")";
+                    bd.execSQL(req);
+                    // affichage de l'IMG
+                    calcIMG();
                 } else {
-                    Toast.makeText(CoachActivity.this, "Veuillez saisir tous les champs !",
-                            Toast.LENGTH_SHORT).show();
-                        Log.d("Erreur", "champs non saisis") ;
+                    Toast.makeText(CoachActivity.this, "Veuillez saisir tous les champs !", Toast.LENGTH_SHORT).show();
                 }
-                bd = accesBD.getWritableDatabase();
-                String req = "insert into profil (datemesure, taille, poids, age, sexe) values " ;
-                req += "(\""+monProfil.getDateMesure().toString()+"\","
-                        +monProfil.getTaille()+","+monProfil.getPoids()+","
-                        +monProfil.getAge()+","+monProfil.getSexe()+")";
-                bd.execSQL(req);
             }
         });
     }
@@ -231,12 +236,15 @@ public class CoachActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coach);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        // accès à la base de données
+        accesBD = new MySQLiteOpenHelper(this, nomBase, versionBase);
+        // méthodes d'écoute des événements
         this.ecouteRadio();
         this.ecouteCalcul();
-        accesBD = new MySQLiteOpenHelper(this, nomBase, versionBase) ;
+        // récupération éventuelle de la dernière mesure dans la base de données
         this.recupLastProfilBase();
+        // remplissage de l'historique des mesures
+        this.remplirHisto() ;
     }
 
     @Override
