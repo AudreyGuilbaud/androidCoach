@@ -1,5 +1,7 @@
 package com.example.sessionprincipale.coach;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -35,6 +37,7 @@ public class CoachActivity extends AppCompatActivity {
     private String nomBase = "bdcoach.sqlite" ;
     private Integer versionBase = 1 ;
     private MySQLiteOpenHelper accesBD ;
+    private SQLiteDatabase bd ;
 
 
     /**
@@ -124,9 +127,39 @@ public class CoachActivity extends AppCompatActivity {
                             Toast.LENGTH_SHORT).show();
                         Log.d("Erreur", "champs non saisis") ;
                 }
+                bd = accesBD.getWritableDatabase();
+                String req = "insert into profil (datemesure, taille, poids, age, sexe) values " ;
+                req += "(\""+monProfil.getDateMesure().toString()+"\","
+                        +monProfil.getTaille()+","+monProfil.getPoids()+","
+                        +monProfil.getAge()+","+monProfil.getSexe()+")";
+                bd.execSQL(req);
             }
         });
     }
+
+    private void recupLastProfilBase() {
+        bd = accesBD. getReadableDatabase ();
+        Cursor curseur = bd.rawQuery("select * from profil",null);
+        curseur.moveToLast() ;
+        if (!curseur.isAfterLast()) {
+            // récupération dans l'ordre : date (inutile), taille, poids, age, sexe
+            Integer taille = (int)(curseur.getFloat(1)*100) ;
+            Integer poids = curseur.getInt(2) ;
+            Integer age = curseur.getInt(3) ;
+            Integer sexe = curseur.getInt(4) ;
+            // valorisation des objets graphiques avec les informations récupérées
+            ((EditText)findViewById(R.id.txtTaille)).setText(taille.toString());
+            ((EditText)findViewById(R.id.txtPoids)).setText(poids.toString());
+            ((EditText)findViewById(R.id.txtAge)).setText(age.toString());
+            if (sexe==1) { // homme
+                ((RadioButton)findViewById(R.id.rdHomme)).setChecked(true);
+            }else{ // femme
+                ((RadioButton)findViewById(R.id.rdFemme)).setChecked(true);
+            }
+        }
+        curseur.close();
+    }
+
 
 
 
@@ -143,6 +176,7 @@ public class CoachActivity extends AppCompatActivity {
         this.ecouteRadio();
         this.ecouteCalcul();
         accesBD = new MySQLiteOpenHelper(this, nomBase, versionBase) ;
+        this.recupLastProfilBase();
     }
 
     @Override
