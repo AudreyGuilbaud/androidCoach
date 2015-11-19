@@ -1,9 +1,11 @@
 package com.example.sessionprincipale.coach;
 
+import java.io.Serializable;
+
 /**
  * Classe permettant la mémorisation des informations saisies pour la serialisation.
  */
-public class Profil {
+public class Profil implements Serializable{
     private Integer age ;
     private Integer poids ;
     private Integer sexe ;

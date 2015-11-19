@@ -29,7 +29,8 @@ public class CoachActivity extends AppCompatActivity {
     private Integer maxFemme = 30 ; // graisse si au-dessus
     private Integer minHomme = 10 ; // maigreur si en dessous
     private Integer maxHomme = 25 ; // graisse si au-dessus
-    private Profil monProfil ;
+    private Profil monProfil ; // pour le serialize
+    private String nomFic = "save" ;// pour le serialize
 
     /**
      * Détermination du sexe
@@ -59,8 +60,8 @@ public class CoachActivity extends AppCompatActivity {
    */
 
         private void calcIMG() {
-            float ftaille = (float) monProfil.getTaille()/100 ; // conversion en m
-            float img = (float)((1.2*monProfil.getPoids()/(ftaille*ftaille))+(0.23*monProfil.getAge())-(10.83*monProfil.getSexe())-5.4) ;
+            float img = (float)((1.2*monProfil.getPoids()/(monProfil.getTaille()*monProfil.getTaille()))
+                    +(0.23*monProfil.getAge())-(10.83*monProfil.getSexe())-5.4) ;
 //        float img = (float)(poids/(taille*taille)) ;
             // récupération des objets graphiques d'affichage du résultat
             TextView lblIMG = (TextView) findViewById(R.id.lblIMG);
@@ -93,6 +94,7 @@ public class CoachActivity extends AppCompatActivity {
             }
             // construction du message complet à afficher
             lblIMG.setText(String.format("%.01f", img)+" : IMG "+message);
+            Serializer.serialize(nomFic, monProfil, CoachActivity.this);
         }
 
     /**
@@ -123,6 +125,30 @@ public class CoachActivity extends AppCompatActivity {
     }
 
     /**
+     * Récupération de l'objet sérialisé
+     */
+    /**
+     * tentative de récupération du profil enregistré
+     */
+    private void recupSerialize() {
+        monProfil = (Profil) Serializer.deSerialize(nomFic, CoachActivity.this) ;
+        if (monProfil==null) {
+            monProfil = new Profil() ;
+        }else{
+            // valorisation des objets graphiques
+            ((EditText)findViewById(R.id.txtPoids)).setText(monProfil.getPoids().toString());
+            Float taille = monProfil.getTaille()*100 ;
+            ((EditText)findViewById(R.id.txtTaille)).setText(taille.toString());
+            ((EditText)findViewById(R.id.txtAge)).setText(monProfil.getAge().toString());
+            if (monProfil.getSexe()==1) {
+                ((RadioButton)findViewById(R.id.rdHomme)).setChecked(true);
+            }else{
+                ((RadioButton)findViewById(R.id.rdFemme)).setChecked(true);
+            }
+        }
+    }
+
+    /**
      * Instancie l'interface et permet l'affichage de l'interface au fur et à mesure des actions de l'utilisateur
      * @param savedInstanceState frame de l'application
      */
@@ -134,6 +160,7 @@ public class CoachActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         this.ecouteRadio();
         this.ecouteCalcul();
+        this.recupSerialize();
     }
 
     @Override
