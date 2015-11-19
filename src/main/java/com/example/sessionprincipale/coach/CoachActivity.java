@@ -94,7 +94,6 @@ public class CoachActivity extends AppCompatActivity {
             }
             // construction du message complet à afficher
             lblIMG.setText(String.format("%.01f", img)+" : IMG "+message);
-            Serializer.serialize(nomFic, monProfil, CoachActivity.this);
         }
 
     /**
@@ -124,29 +123,7 @@ public class CoachActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Récupération de l'objet sérialisé
-     */
-    /**
-     * tentative de récupération du profil enregistré
-     */
-    private void recupSerialize() {
-        monProfil = (Profil) Serializer.deSerialize(nomFic, CoachActivity.this) ;
-        if (monProfil==null) {
-            monProfil = new Profil() ;
-        }else{
-            // valorisation des objets graphiques
-            ((EditText)findViewById(R.id.txtPoids)).setText(monProfil.getPoids().toString());
-            Float taille = monProfil.getTaille()*100 ;
-            ((EditText)findViewById(R.id.txtTaille)).setText(taille.toString());
-            ((EditText)findViewById(R.id.txtAge)).setText(monProfil.getAge().toString());
-            if (monProfil.getSexe()==1) {
-                ((RadioButton)findViewById(R.id.rdHomme)).setChecked(true);
-            }else{
-                ((RadioButton)findViewById(R.id.rdFemme)).setChecked(true);
-            }
-        }
-    }
+
 
     /**
      * Instancie l'interface et permet l'affichage de l'interface au fur et à mesure des actions de l'utilisateur
@@ -160,7 +137,6 @@ public class CoachActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         this.ecouteRadio();
         this.ecouteCalcul();
-        this.recupSerialize();
     }
 
     @Override
